@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>حصص البنزين - كركوك 2026</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+
+body{
+    margin:0;
+    font-family:'Cairo',sans-serif;
+    direction:rtl;
+    background:linear-gradient(135deg,#0f2027,#203a43,#2c5364);
+    color:white;
+    text-align:center;
+}
+
+.header{
+    padding:25px 10px;
+}
+
+.header h1{
+    margin:0;
+    font-size:26px;
+}
+
+.timer{
+    background:rgba(255,255,255,0.15);
+    backdrop-filter:blur(10px);
+    padding:15px;
+    border-radius:15px;
+    width:90%;
+    margin:auto;
+    margin-top:10px;
+    font-size:18px;
+}
+
+.container{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:20px;
+    padding:25px;
+}
+
+.card{
+    background:white;
+    color:#333;
+    width:260px;
+    border-radius:20px;
+    padding:20px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.25);
+    transition:0.3s;
+}
+
+.card:hover{
+    transform:translateY(-5px);
+}
+
+.active{
+    border:3px solid #27ae60;
+    background:#ecfff3;
+}
+
+.title{
+    font-weight:bold;
+    margin-bottom:10px;
+    color:#555;
+}
+
+.number{
+    font-size:22px;
+    font-weight:bold;
+    margin-bottom:10px;
+}
+
+.date{
+    font-size:16px;
+}
+
+.footer{
+    margin-top:20px;
+    opacity:0.7;
+    font-size:14px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="header">
+<h1>⛽ حصص البنزين - محافظة كركوك</h1>
+</div>
+
+<div class="timer" id="countdown"></div>
+
+<div class="container" id="cards"></div>
+
+<div class="footer">
+نظام متابعة الحصص لسنة 2026
+</div>
+
+<script>
+
+const startDate=new Date(2026,0,5);
+const endDate=new Date(2026,11,31);
+
+let quotas=[];
+let currentStart=new Date(startDate);
+let n=1;
+
+while(currentStart<=endDate){
+
+let end=new Date(currentStart);
+end.setDate(end.getDate()+4);
+
+quotas.push({
+number:n,
+start:new Date(currentStart),
+end:new Date(end)
+});
+
+currentStart.setDate(currentStart.getDate()+5);
+n++;
+}
+
+const today=new Date();
+
+let index=quotas.findIndex(
+q=>today>=q.start && today<=q.end
+);
+
+if(index===-1 && today<startDate) index=0;
+if(index===-1 && today>endDate) index=quotas.length-1;
+
+const container=document.getElementById("cards");
+
+function card(title,q,active=false){
+
+if(!q) return;
+
+const div=document.createElement("div");
+div.className="card"+(active?" active":"");
+
+div.innerHTML=`
+<div class="title">${title}</div>
+<div class="number">الحصة ${q.number}</div>
+<div class="date">من ${q.start.toLocaleDateString('ar-EG')}</div>
+<div class="date">إلى ${q.end.toLocaleDateString('ar-EG')}</div>
+`;
+
+container.appendChild(div);
+}
+
+card("الحصة السابقة",quotas[index-1]);
+card("الحصة الحالية",quotas[index],true);
+card("الحصة التالية",quotas[index+1]);
+
+/* ===== TIMER ===== */
+
+const timer=document.getElementById("countdown");
+const next=quotas[index+1];
+
+function update(){
+
+if(!next){
+timer.innerText="انتهت حصص هذه السنة";
+return;
+}
+
+const now=new Date();
+const diff=next.start-now;
+
+if(diff<=0){
+location.reload();
+return;
+}
+
+let d=Math.floor(diff/(1000*60*60*24));
+let h=Math.floor((diff/(1000*60*60))%24);
+let m=Math.floor((diff/(1000*60))%60);
+let s=Math.floor((diff/1000)%60);
+
+timer.innerText=
+`⏳ باقي على الحصة التالية: ${d} يوم ${h} ساعة ${m} دقيقة ${s} ثانية`;
+
+}
+
+setInterval(update,1000);
+update();
+
+</script>
+
+</body>
+</html>
